@@ -1,14 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 import Button from './elements/Button.vue'
+import { useUserStore } from '@/stores/userStore'
 
 const idNumber = ref('')
 const error = ref('')
 const events = ref(null)
-const userInfo = ref(null)
+const userStore = useUserStore()
 
 const getGender = (digit) => parseInt(digit) >= 5 ? 'Male' : 'Female'
-const getResidentStatus = (digit) => parseInt(digit) === 8 ? 'South African Citizen' : 'Permanent Resident'
+const getResidentStatus = (digit) => parseInt(digit) === 0 ? 'South African Citizen' : 'Permanent Resident'
 const formatBirthDate = (year, month, day) => {
   const fullYear = parseInt(year) > 21 ? `19${year}` : `20${year}`
   return `${day}/${month}/${fullYear}`
@@ -33,14 +34,6 @@ const validateSAID = (id) => {
   const genderDigit = parseInt(id.charAt(6))
   if (genderDigit < 0 || genderDigit > 9) return false
 
-  // Citizenship validation (0 for SA citizen)
-  const citizenshipDigit = parseInt(id.charAt(10))
-  if (citizenshipDigit !== 0) return false
-
-  // Resident status (usually 8 or 9)
-  const residentDigit = parseInt(id.charAt(11))
-  if (residentDigit !== 8 && residentDigit !== 9) return false
-
   // Luhn algorithm for check digit validation
   const digits = id.split('').map(Number)
   const checkDigit = digits.pop()
@@ -59,7 +52,7 @@ const validateSAID = (id) => {
 
 const handleSearch = async () => {
   error.value = ''
-  userInfo.value = null
+  userStore.setUser(null)
 
   if (!validateSAID(idNumber.value)) {
     error.value = 'Please enter a valid South African ID number'
@@ -72,13 +65,13 @@ const handleSearch = async () => {
     const month = idNumber.value.substring(2, 4)
     const day = idNumber.value.substring(4, 6)
     const genderDigit = idNumber.value.charAt(6)
-    const residentDigit = idNumber.value.charAt(11)
+    const residentDigit = idNumber.value.charAt(10)
 
-    userInfo.value = {
+    userStore.setUser({
       birthDate: formatBirthDate(birthYear, month, day),
       gender: getGender(genderDigit),
       residentStatus: getResidentStatus(residentDigit)
-    }
+    })
 
     const response = await fetch(`/api/events?month=${month}&day=${day}`)
     events.value = await response.json()
@@ -104,19 +97,7 @@ const handleSearch = async () => {
       </div>
       <Button @click="handleSearch" class="w-full">Search Events</Button>
 
-      <div v-if="userInfo" class="mt-6 p-4 bg-gray-50 rounded-md">
-        <h3 class="text-lg font-semibold mb-3">ID Information:</h3>
-        <dl class="grid grid-cols-2 gap-2">
-          <dt class="text-gray-600">Birth Date:</dt>
-          <dd class="font-medium">{{ userInfo.birthDate }}</dd>
-
-          <dt class="text-gray-600">Gender:</dt>
-          <dd class="font-medium">{{ userInfo.gender }}</dd>
-
-          <dt class="text-gray-600">Status:</dt>
-          <dd class="font-medium">{{ userInfo.residentStatus }}</dd>
-        </dl>
-      </div>
+      <UserInfo />
 
       <div v-if="events" class="mt-6">
         <h3 class="text-xl font-semibold mb-2">Special Events on Your Birthday:</h3>
