@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Button from './elements/Button.vue'
 import { useUserStore } from '@/stores/userStore'
 
@@ -7,6 +7,20 @@ const idNumber = ref('')
 const error = ref('')
 const events = ref(null)
 const userStore = useUserStore()
+const inputShake = ref(false)
+
+const isButtonDisabled = computed(() => idNumber.value.length !== 13)
+
+const handleInput = (event) => {
+  const numericValue = event.target.value.replace(/[^0-9]/g, '')
+  if (numericValue !== event.target.value) {
+    inputShake.value = true
+    setTimeout(() => {
+      inputShake.value = false
+    }, 500)
+  }
+  idNumber.value = numericValue
+}
 
 const getGender = (digit) => parseInt(digit) >= 5 ? 'Male' : 'Female'
 const getResidentStatus = (digit) => parseInt(digit) === 0 ? 'South African Citizen' : 'Permanent Resident'
@@ -85,21 +99,39 @@ const handleSearch = async () => {
   <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
     <h2 class="text-2xl font-bold mb-4">Find Birthday Events</h2>
     <div class="space-y-4">
-      <div>
+      <div class="relative">
         <input 
           type="text"
-          v-model="idNumber"
+          :value="idNumber"
+          @input="handleInput"
           placeholder="Enter South African ID number"
           maxlength="13"
-          class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          :class="[
+            'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300',
+            inputShake ? 'animate-shake' : ''
+          ]"
         />
-        <p v-if="error" class="text-red-500 text-sm mt-1">{{ error }}</p>
+        <label v-if="idNumber"
+          class="absolute text-gray-500 text-sm bg-white px-1 transition-all duration-300 pointer-events-none"
+          :class="[
+            idNumber ? 
+              'top-0 left-2 transform -translate-y-1/2 scale-90' : 
+              'top-1/2 left-2 transform -translate-y-1/2 scale-100'
+          ]"
+        >
+          South African ID Number
+        </label>
+        <div 
+          class="absolute bottom-0 left-0 h-0.5 bg-blue-500 transition-all duration-300"
+          :style="{ width: `${(idNumber.length / 13) * 100}%` }"
+        ></div>
       </div>
-      <Button @click="handleSearch" class="w-full">Search Events</Button>
+      <p v-if="error" class="text-red-500 text-sm mt-1 animate-fade-in">{{ error }}</p>
+      <Button :disabled="isButtonDisabled" @click="handleSearch" class="w-full">Search Events</Button>
 
       <UserInfo />
 
-      <div v-if="events" class="mt-6">
+      <div v-if="events" class="mt-6 animate-fade-in">
         <h3 class="text-xl font-semibold mb-2">Special Events on Your Birthday:</h3>
         <ul class="list-disc pl-5 space-y-2">
           <li v-for="event in events" :key="event.id" class="text-gray-700">
@@ -110,3 +142,42 @@ const handleSearch = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%, 50%, 70% {
+    transform: translate3d(-3px, 0, 0);
+  }
+
+  40%, 60% {
+    transform: translate3d(3px, 0, 0);
+  }
+}
+</style>
