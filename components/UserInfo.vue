@@ -3,22 +3,72 @@ import { useUserStore } from '@/stores/userStore'
 import { storeToRefs } from 'pinia'
 
 const userStore = useUserStore()
-const { user } = storeToRefs(userStore)
+const { getUser, getHolidays, isLoading } = storeToRefs(userStore)
 </script>
 
 <template>
-  <div v-if="user" class="mt-6 p-4 bg-gray-50 rounded-md animate-slide-in">
-    <h3 class="text-lg font-semibold mb-3">ID Information:</h3>
-    <dl class="grid grid-cols-2 gap-2">
-      <template v-for="(value, key) in user" :key="key">
-        <dt class="text-gray-600 animate-fade-in" :style="{ animationDelay: '100ms' }">
-          {{ key.charAt(0).toUpperCase() + key.slice(1) }}:
-        </dt>
-        <dd class="font-medium animate-fade-in" :style="{ animationDelay: '200ms' }">
-          {{ value }}
-        </dd>
-      </template>
-    </dl>
+  <div v-if="getUser" class="space-y-6">
+    <div class="p-4 bg-gray-50 rounded-md animate-slide-in">
+      <h3 class="text-lg font-semibold mb-3">ID Information:</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <div class="text-gray-600 animate-fade-in" :style="{ animationDelay: '100ms' }">
+            ID Number:
+          </div>
+          <div class="text-gray-600 animate-fade-in" :style="{ animationDelay: '100ms' }">
+            Birth Date:
+          </div>
+          <div class="text-gray-600 animate-fade-in" :style="{ animationDelay: '100ms' }">
+            Gender:
+          </div>
+          <div class="text-gray-600 animate-fade-in" :style="{ animationDelay: '100ms' }">
+            Citizenship:
+          </div>
+        </div>
+        <div>
+          <div class="font-medium animate-fade-in" :style="{ animationDelay: '200ms' }">
+            {{ getUser.idNumber }}
+          </div>
+          <div class="font-medium animate-fade-in" :style="{ animationDelay: '200ms' }">
+            {{ getUser.birthDate }}
+          </div>
+          <div class="font-medium animate-fade-in" :style="{ animationDelay: '200ms' }">
+            {{ getUser.gender }}
+          </div>
+          <div class="font-medium animate-fade-in" :style="{ animationDelay: '200ms' }">
+            {{ getUser.residentStatus }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isLoading" class="text-center p-4">
+      <div class="animate-pulse">Loading holidays...</div>
+    </div>
+
+    <template v-else>
+      <div v-if="getHolidays?.length" class="p-4 bg-gray-50 rounded-md animate-slide-in">
+        <h3 class="text-lg font-semibold mb-3">Birthday Holidays:</h3>
+        <ul class="space-y-4">
+          <li v-for="holiday in getHolidays" :key="holiday.name" 
+              class="animate-fade-in bg-white p-3 rounded shadow-sm">
+            <h4 class="font-medium text-blue-600">{{ holiday.name }}</h4>
+            <p class="text-sm text-gray-600 mt-1">{{ holiday.description }}</p>
+            <span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              {{ holiday.type }}
+            </span>
+          </li>
+        </ul>
+      </div>
+      <div v-else-if="getUser" class="p-4 bg-gray-50 rounded-md animate-slide-in">
+        <h3 class="text-lg font-semibold mb-3">Birthday Holidays:</h3>
+        <p class="text-gray-600 animate-fade-in">No holidays found for this birth date</p>
+      </div>
+    </template>
+    
+    <div v-if="getUser.searchCount" class="text-sm text-gray-600 animate-fade-in text-center">
+      This ID has been searched {{ getUser.searchCount }} {{ getUser.searchCount === 1 ? 'time' : 'times' }}
+    </div>
   </div>
 </template>
 

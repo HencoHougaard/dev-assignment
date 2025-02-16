@@ -2,11 +2,11 @@
 import { ref, computed } from 'vue'
 import Button from './elements/Button.vue'
 import { useUserStore } from '@/stores/userStore'
+import { storeToRefs } from 'pinia'
 
 const idNumber = ref('')
-const error = ref('')
-const events = ref(null)
 const userStore = useUserStore()
+const { getError, isLoading } = storeToRefs(userStore)
 const inputShake = ref(false)
 
 const isButtonDisabled = computed(() => idNumber.value.length !== 13)
@@ -22,82 +22,14 @@ const handleInput = (event) => {
   idNumber.value = numericValue
 }
 
-const getGender = (digit) => parseInt(digit) >= 5 ? 'Male' : 'Female'
-const getResidentStatus = (digit) => parseInt(digit) === 0 ? 'South African Citizen' : 'Permanent Resident'
-const formatBirthDate = (year, month, day) => {
-  const fullYear = parseInt(year) > 21 ? `19${year}` : `20${year}`
-  return `${day}/${month}/${fullYear}`
-}
-
-const validateSAID = (id) => {
-  if (!id) return false
-
-  // SA ID number must be 13 digits
-  if (!/^\d{13}$/.test(id)) return false
-
-  // Extract date components
-  const year = parseInt(id.substring(0, 2))
-  const month = parseInt(id.substring(2, 4))
-  const day = parseInt(id.substring(4, 6))
-
-  // Basic date validation
-  if (month < 1 || month > 12) return false
-  if (day < 1 || day > 31) return false
-
-  // Gender validation (7th digit: 0-4 female, 5-9 male)
-  const genderDigit = parseInt(id.charAt(6))
-  if (genderDigit < 0 || genderDigit > 9) return false
-
-  // Luhn algorithm for check digit validation
-  const digits = id.split('').map(Number)
-  const checkDigit = digits.pop()
-  const sum = digits
-    .reverse()
-    .map((digit, index) => {
-      let value = digit * (index % 2 === 0 ? 2 : 1)
-      if (value > 9) value -= 9
-      return value
-    })
-    .reduce((acc, val) => acc + val, 0)
-
-  const calculatedCheck = (10 - (sum % 10)) % 10
-  return calculatedCheck === checkDigit
-}
-
 const handleSearch = async () => {
-  error.value = ''
-  userStore.setUser(null)
-
-  if (!validateSAID(idNumber.value)) {
-    error.value = 'Please enter a valid South African ID number'
-    return
-  }
-
-  try {
-    // Extract user information
-    const birthYear = idNumber.value.substring(0, 2)
-    const month = idNumber.value.substring(2, 4)
-    const day = idNumber.value.substring(4, 6)
-    const genderDigit = idNumber.value.charAt(6)
-    const residentDigit = idNumber.value.charAt(10)
-
-    userStore.setUser({
-      birthDate: formatBirthDate(birthYear, month, day),
-      gender: getGender(genderDigit),
-      residentStatus: getResidentStatus(residentDigit)
-    })
-
-    const response = await fetch(`/api/events?month=${month}&day=${day}`)
-    events.value = await response.json()
-  } catch (err) {
-    error.value = 'Failed to fetch events. Please try again.'
-  }
+  await userStore.handleUserSearch(idNumber.value)
 }
 </script>
 
 <template>
   <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-    <h2 class="text-2xl font-bold mb-4">Find Birthday Events</h2>
+    <h2 class="text-2xl text-center font-bold mb-4">Find Birthday Events</h2>
     <div class="space-y-4">
       <div class="relative">
         <input 
@@ -126,19 +58,11 @@ const handleSearch = async () => {
           :style="{ width: `${(idNumber.length / 13) * 100}%` }"
         ></div>
       </div>
-      <p v-if="error" class="text-red-500 text-sm mt-1 animate-fade-in">{{ error }}</p>
-      <Button :disabled="isButtonDisabled" @click="handleSearch" class="w-full">Search Events</Button>
-
+      <p v-if="getError" class="text-red-500 text-sm mt-1 animate-fade-in">{{ getError }}</p>
+      <Button :disabled="isButtonDisabled || isLoading" @click="handleSearch" class="w-full">
+        {{ isLoading ? 'Searching...' : 'Search Events' }}
+      </Button>
       <UserInfo />
-
-      <div v-if="events" class="mt-6 animate-fade-in">
-        <h3 class="text-xl font-semibold mb-2">Special Events on Your Birthday:</h3>
-        <ul class="list-disc pl-5 space-y-2">
-          <li v-for="event in events" :key="event.id" class="text-gray-700">
-            {{ event.name }}
-          </li>
-        </ul>
-      </div>
     </div>
   </div>
 </template>
