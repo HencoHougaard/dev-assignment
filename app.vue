@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue'
 import SearchId from './components/SearchId.vue'
 </script>
 
