@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
     console.error('Database error:', error)
     throw createError({
       statusCode: 500,
-      message: error.message || 'Error processing user data'
+      message: (error as Error).message || 'Error processing user data'
     })
   }
 })
