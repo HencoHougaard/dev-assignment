@@ -25,7 +25,7 @@ Create a `.env` file in the root directory and add the following environment var
 
 ```properties
 # Database Configuration
-DATABASE_URL="mysql://root:Password@1234@localhost:3306/birthday_events"
+DATABASE_URL="mysql://root:[your_password]@localhost:3306/birthday_events"
 
 # Calendarific API Configuration
 NUXT_PUBLIC_CALENDARIFIC_API_KEY="your_calendarific_api_key"
