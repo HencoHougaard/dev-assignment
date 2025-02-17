@@ -32,6 +32,7 @@ NUXT_PUBLIC_CALENDARIFIC_API_KEY="your_calendarific_api_key"
 ```
 
 Replace `your_calendarific_api_key` with your actual Calendarific API key.
+
 Replace [your_password] with your database password.
 
 ## MySQL Database Setup
