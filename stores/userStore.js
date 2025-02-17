@@ -17,6 +17,17 @@ export const useUserStore = defineStore('userStore', {
             this.user = user
         },
 
+        /**
+         * Validates a South African ID number.
+         *
+         * The ID number must be 13 digits long and pass several checks:
+         * - Basic date validation for year, month, and day components.
+         * - Gender validation based on the 7th digit (0-4 for female, 5-9 for male).
+         * - Luhn algorithm check for the check digit.
+         *
+         * @param {string} id - The South African ID number to validate.
+         * @returns {boolean} - Returns true if the ID number is valid, otherwise false.
+         */
         validateSAID(id) {
             if (!id) return false
           
@@ -52,6 +63,14 @@ export const useUserStore = defineStore('userStore', {
             return calculatedCheck === checkDigit
         },
 
+        /**
+         * Handles the user search process based on the provided South African ID number.
+         * 
+         * @param {string} idNumber - The South African ID number to search for.
+         * @returns {Promise<boolean>} - Returns a promise that resolves to true if the user search was successful, otherwise false.
+         * 
+         * @throws {Error} - Throws an error if the user data processing fails.
+         */
         async handleUserSearch(idNumber) {
             this.isLoading = true
             this.error = null
@@ -153,6 +172,16 @@ export const useUserStore = defineStore('userStore', {
             return parseInt(digit) === 0 ? 'South African Citizen' : 'Permanent Resident'
         },
 
+        /**
+         * Asynchronously fetches user data from the server and updates the user store.
+         * Sends a POST request to the '/api/users' endpoint with user data in the request body.
+         * On success, updates the user store with the fetched user data.
+         * Logs an error message to the console if the fetch operation fails.
+         *
+         * @async
+         * @function fetchUser
+         * @returns {Promise<void>} A promise that resolves when the user data has been fetched and the store has been updated.
+         */
         async fetchUser() {
             try {
                 const response = await fetch('/api/users', {
@@ -172,6 +201,18 @@ export const useUserStore = defineStore('userStore', {
             }
         },
 
+        /**
+         * Fetches holidays for a specific year, month, and day from the Calendarific API.
+         *
+         * @param {number} year - The year for which to fetch holidays.
+         * @param {number} month - The month for which to fetch holidays.
+         * @param {number} day - The day for which to fetch holidays.
+         * @returns {Promise<Array<Object>>} A promise that resolves to an array of holiday objects.
+         * @property {string} name - The name of the holiday.
+         * @property {string} description - The description of the holiday.
+         * @property {string} type - The type of the holiday.
+         * @property {string} date - The ISO date string of the holiday.
+         */
         async fetchEvents(year, month, day) {
             try {
                 const config = useRuntimeConfig()
@@ -196,9 +237,6 @@ export const useUserStore = defineStore('userStore', {
                         const targetDay = holidayDate.getDate()
                         
                         const matches = targetMonth === parseInt(month) && targetDay === parseInt(day)
-                        if (matches) {
-                            console.log(`Found matching holiday: ${holiday.name} on ${holiday.date.iso}`)
-                        }
                         return matches
                     })
                     .map(holiday => ({
