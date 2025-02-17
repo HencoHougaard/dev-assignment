@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply text-primary;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-primary;
+    }
+}
+
+/* Default text color for paragraphs and general text */
+p, span, div {
+    @apply text-primary;
+}

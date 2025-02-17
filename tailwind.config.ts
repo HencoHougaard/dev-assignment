@@ -10,7 +10,11 @@ module.exports = {
     ],
     theme: {
         extend: {
-            
+            colors: {
+                primary: '#223030',
+                secondary: '#959D90',
+                accent: '#EFEFE9',
+            }
         }
     }
 }

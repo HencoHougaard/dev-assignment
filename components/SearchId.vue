@@ -29,7 +29,7 @@ const handleSearch = async () => {
 
 <template>
   <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-    <h2 class="text-2xl text-center font-bold mb-4">Find Birthday Events</h2>
+    <h2 class="text-2xl text-center text-primary font-bold mb-4">Find Birthday Events</h2>
     <div class="space-y-4">
       <div class="relative">
         <input 
@@ -39,12 +39,12 @@ const handleSearch = async () => {
           placeholder="Enter South African ID number"
           maxlength="13"
           :class="[
-            'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300',
+            'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 text-primary placeholder-secondary',
             inputShake ? 'animate-shake' : ''
           ]"
         />
         <label v-if="idNumber"
-          class="absolute text-gray-500 text-sm bg-white px-1 transition-all duration-300 pointer-events-none"
+          class="absolute text-secondary text-sm bg-white px-1 transition-all duration-300 pointer-events-none"
           :class="[
             idNumber ? 
               'top-0 left-2 transform -translate-y-1/2 scale-90' : 
@@ -54,7 +54,7 @@ const handleSearch = async () => {
           South African ID Number
         </label>
         <div 
-          class="absolute bottom-0 left-0 h-0.5 bg-blue-500 transition-all duration-300"
+          class="absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300"
           :style="{ width: `${(idNumber.length / 13) * 100}%` }"
         ></div>
       </div>
